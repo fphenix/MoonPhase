@@ -14,6 +14,7 @@ class LPC {
   float distKm;
   float earthRadii = 6371; // km (about)
   float eclipticLatitude, eclipticLongitude;
+  float moonAge;
   String zodiac;
   String phase;
   float illum;
@@ -158,9 +159,9 @@ class LPC {
     float ip = (jgDay - 2451550.1) / maxAge;
     float ipNormalized = this.normIt(ip);
     float ipRad = ipNormalized * PI; // convert to radian
-    float moonAge = ipNormalized * maxAge;
+    this.moonAge = ipNormalized * maxAge;
 
-    this.pc = map(moonAge/maxAge, 0, 1, 0, 100);
+    this.pc = map(this.moonAge/maxAge, 0, 1, 0, 100);
 
     //Calculate illumination approximation
     this.illum = (this.pc < 50) ? this.pc * 2 : 100 - (this.pc*2 - 100);
@@ -177,7 +178,7 @@ class LPC {
     this.eclipticLatitude = 5.1 * sin(np);
 
     // calculate moon's ecliptic longitude
-    temp = (jgDay -  - 2451555.8) / 27.321582241;
+    temp = (jgDay - 2451555.8) / 27.321582241;
     float rp = this.normIt(temp);
     temp  = (360.0 * rp) + (6.3*sin(dp));
     temp += 1.3*sin(2*ipRad - dp);
@@ -213,7 +214,7 @@ class LPC {
   // End fo part "based on ...."
   // -----------------------------------------------------------------------------------------
 
-  // completely useless stars method!!
+  // completely useless but cool stars methods!!
   void starsInit () {
     for (int n = 0; n < 100; n++) {
       strokeWeight(random(3));
@@ -234,6 +235,8 @@ class LPC {
     ty = height/2 + this.offsety*4;
     fill(255);
     text("Date (Y/m/d): " + this.dateYYYYMMDD + " @ 12h UT", tx, ty);
+    ty += offsettxt;
+    text("Moon Age (days): " + this.moonAge, tx, ty);
     ty += offsettxt;
     text("Moon in constellation: " + this.zodiac, tx, ty);
     ty += offsettxt;
