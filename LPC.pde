@@ -94,12 +94,12 @@ class LPC {
 
     //Prepare for the 2 half-circles that will be used to compute the mask
     if (this.pc < 50) {
-      // during first half of the cycle,
+      // during the first half of the cycle,
       // one border of the shape stays on the left side (-1)
       // (when the other one moves from right (+1) to left (-1))
       normRx[0] = -1;
     } else {
-      // during 2nd half of the cycle,
+      // during the 2nd half of the cycle,
       // one border of the shape stays on the right side (+1)
       // (when the other one moves again from right (+1) to left (-1))
       normRx[0] = 1;
@@ -160,8 +160,7 @@ class LPC {
     float ipRad = ipNormalized * PI; // convert to radian
     float moonAge = ipNormalized * maxAge;
 
-    this.pc = (100 * moonAge) / maxAge;
-    this.pc %= 100;
+    this.pc = map(moonAge/maxAge, 0, 1, 0, 100);
 
     //Calculate illumination approximation
     this.illum = (this.pc < 50) ? this.pc * 2 : 100 - (this.pc*2 - 100);
@@ -214,7 +213,7 @@ class LPC {
   // End fo part "based on ...."
   // -----------------------------------------------------------------------------------------
 
-  // completely useless but cool stars methods!!
+  // completely useless stars method!!
   void starsInit () {
     for (int n = 0; n < 100; n++) {
       strokeWeight(random(3));
