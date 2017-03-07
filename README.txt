@@ -14,16 +14,19 @@ Moreover, almost no testing has been done yet (I cannot guarantee that the shown
 close from the fact).
 
 Also in the Processing version I have to put a visible slider and add a better day-offset handling algo.
-(currently you'll see negative days!!)
+(currently you'll see negative days and days above the 31st of the month!!)
 
-Current day: place the mouse in the middle of the canvas.
-Futur days: move the mouse to the right
-Past days: move to the left.
+INTERACTIVITY:
+* Current day: position the mouse right in the middle of the canvas. Date should be today's date.
+* Futur days: move the mouse to the right 
+ - (note: days currently can be shown as being over the 31st instead of correct day in next month/year)
+* Past days: move to the left
+ - (note: days can be shown as negative instead of correct day in previous month/year).
 
 Being aware of all that, still a nice effect! I feel it would be even easier to build a 3D moonobject
 and rotate a light source around, but hey, that a project for another rainy day!
 
-Could add many things, like resizing depending on the distance from Earth, etc.
+Could add many things, like resizing depending on the distance from Earth, put the moon image with the correct rotation, etc.
 
 Do whatever you want with it, but it'd be kind of you to send me corrections if you find any.
 
