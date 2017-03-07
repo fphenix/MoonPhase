@@ -95,12 +95,12 @@ class LPC {
     //Prepare for the 2 half-circles that will be used to compute the mask
     if (this.pc < 50) {
       // during first half of the cycle,
-      // one border of the shape says on the left side (-1)
+      // one border of the shape stays on the left side (-1)
       // (when the other one moves from right (+1) to left (-1))
       normRx[0] = -1;
     } else {
       // during 2nd half of the cycle,
-      // one border of the shape says on the right side (+1)
+      // one border of the shape stays on the right side (+1)
       // (when the other one moves again from right (+1) to left (-1))
       normRx[0] = 1;
     }
