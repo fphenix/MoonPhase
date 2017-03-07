@@ -90,25 +90,26 @@ class LPC {
     String[] phasesLst = {"New Moon", "Waxing Crescent", "First Quarter", "Waxing Gibbous", "Full Moon", "Waning Gibbous", "Last Quarter", "Waning Crescent"};
     int idx = floor(8 * (this.pc + (100/16)) / 100) % 8;
     phase = phasesLst[idx];
-
-    int quadrant = floor(this.pc / 25);
-    float mod = this.pc - (25 * quadrant);
+    float[] normRx = new float[2];
 
     //Prepare for the 2 half-circles that will be used to compute the mask
-    if (quadrant == 3) {
-      this.rx[0] = -1 * (4 * mod);
-    } else if (quadrant == 2) {
-      this.rx[0] = this.radius - (4 * mod);
+    if (this.pc < 50) {
+      // during first half of the cycle,
+      // one border of the shape says on the left side (-1)
+      // (when the other one moves from right (+1) to left (-1))
+      normRx[0] = -1;
     } else {
-      this.rx[0] = -this.radius;
+      // during 2nd half of the cycle,
+      // one border of the shape says on the right side (+1)
+      // (when the other one moves again from right (+1) to left (-1))
+      normRx[0] = 1;
     }
-    if (quadrant == 0) {
-      this.rx[1] = this.radius - (4 * mod);
-    } else if (quadrant == 1) {
-      this.rx[1] = -1 * (4 * mod);
-    } else {
-      this.rx[1] = this.radius;
-    }
+    // In the meantime, the second border goes from right (+1) to left ( -1) 
+    // side during the first and the second halves of the cycle
+    normRx[1] = 1 - ((this.pc % 50) / 25);
+
+    this.rx[0] = normRx[0] * this.radius;
+    this.rx[1] = normRx[1] * this.radius;
   }
 
   // -----------------------------------------------------------------------------------------
@@ -213,7 +214,7 @@ class LPC {
   // End fo part "based on ...."
   // -----------------------------------------------------------------------------------------
 
-  // completely useless stars method!!
+  // completely useless but cool stars methods!!
   void starsInit () {
     for (int n = 0; n < 100; n++) {
       strokeWeight(random(3));
