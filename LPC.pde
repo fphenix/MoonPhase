@@ -8,16 +8,16 @@
 // Lunar Phase Computation
 class LPC {
   String dateYYYYMMDD;
-  float pc;
+  float pc;       // age of moon in percent
   float distance; // in Earth radii (1 Er ~= 6371 km)
   String distName;
   float distKm;
   float earthRadii = 6371; // km (about)
   float eclipticLatitude, eclipticLongitude;
-  float moonAge;
+  float moonAge;  // age of moon in days
   String zodiac;
   String phase;
-  float illum;
+  float illum;    // % of illumination
   //
   float[] rx;
   float ry;
@@ -28,11 +28,11 @@ class LPC {
 
   LPC () {
     this.rx = new float[2];
-    this.radius = 100;
-    this.offsety = 20;
+    this.radius = 100.0;
+    this.offsety = 20.0;
     this.moonC = new PVector(width/2, this.radius + this.offsety);
     this.ry = this.radius;
-    this.stepy = 1;
+    this.stepy = 1.0;
   }
 
   void moonIt (PImage img) {
@@ -44,30 +44,27 @@ class LPC {
     this.ComputeLunarPhase();
     this.zodiac = this.getZodiac();
     this.distName = this.lunarDistance();
-    this.ElipsePhase();
-    this.ElipseMask();
+    this.EllipsePhase();
+    this.EllipseMask();
   }
 
   //build the mask shape that will hide the moon where needs be
-  void ElipseMask () {
+  void EllipseMask () {
     float temp;
     float x;
+    float yy;
     stroke(24);
     strokeWeight(1);
     fill(24, 240); // with a bit of alpha
     // 2 half arcs depending on the rx[] values
     beginShape(); 
-    int i = 0;
-    for (float y = -this.ry; y <= this.ry; y = y + this.stepy) {
-      temp = sqrt(1 - ((y*y) / (this.ry*this.ry)));
-      x = this.rx[i] * temp;
-      vertex(this.moonC.x+x, this.moonC.y+y);
-    }
-    i++;
-    for (float y = this.ry; y >= -this.ry; y = y - this.stepy) {
-      temp = sqrt(1 - ((y*y) / (this.ry*this.ry)));
-      x = this.rx[i] * temp;
-      vertex(this.moonC.x+x, this.moonC.y+y);
+    for (int i = 0; i < 2; i++) {
+      for (float y = -this.ry; y <= this.ry; y = y + this.stepy) {
+        yy = (1 - (2*i)) * y; // yy=y for i=0 and yy=-y for i=1
+        temp = sqrt(1 - ((yy*yy) / (this.ry*this.ry)));
+        x = this.rx[i] * temp;
+        vertex(this.moonC.x+x, this.moonC.y+yy);
+      }
     }
     endShape();
   }
@@ -78,7 +75,7 @@ class LPC {
   // This gives an approximation for a flat Moon rather than a spherical Moon. 
   // But after all it is well known that the Earth is flat, so the Moon must be too...
   //---------------------------------------------------
-  void ElipsePhase () {
+  void EllipsePhase () {
     //if      moonAge <  1.84566 then Phase = "NEW"
     //else if moonAge <  5.53699 then Phase = "Waxing crescent"
     //else if moonAge <  9.22831 then Phase = "First quarter"
@@ -89,25 +86,30 @@ class LPC {
     //else if moonAge < 27.68493 then Phase = "Waning crescent"
     //else                            Phase = "NEW"
     String[] phasesLst = {"New Moon", "Waxing Crescent", "First Quarter", "Waxing Gibbous", "Full Moon", "Waning Gibbous", "Last Quarter", "Waning Crescent"};
-    int idx = floor(8 * (this.pc + (100/16)) / 100) % 8;
+    float temp = 8.0 * ((this.pc/100.0) + (1.0/16.0)); // warning!! "float t = 49/100;" gives 0.0 whereas "float t = 49.0/100;" gives 0.49...
+    int idx = floor(temp) % 8;
     phase = phasesLst[idx];
     float[] normRx = new float[2];
 
     //Prepare for the 2 half-circles that will be used to compute the mask
-    if (this.pc < 50) {
+    if (this.pc < 50.0) {
       // during the first half of the cycle,
       // one border of the shape stays on the left side (-1)
       // (when the other one moves from right (+1) to left (-1))
-      normRx[0] = -1;
+      normRx[0] = -1.0;
     } else {
       // during the 2nd half of the cycle,
       // one border of the shape stays on the right side (+1)
       // (when the other one moves again from right (+1) to left (-1))
-      normRx[0] = 1;
+      normRx[0] = 1.0;
     }
     // In the meantime, the second border goes from right (+1) to left ( -1) 
     // side during the first and the second halves of the cycle
-    normRx[1] = 1 - ((this.pc % 50) / 25);
+    // Could do like this: 
+    //   normRx[1] = 1 - ((this.pc % 50) / 25);
+    // but let's try to include 3D with cos()
+    float ztheta = 2.0 * PI * (this.pc % 50)/100;
+    normRx[1] = cos(ztheta);
 
     this.rx[0] = normRx[0] * this.radius;
     this.rx[1] = normRx[1] * this.radius;
@@ -139,12 +141,12 @@ class LPC {
     float shiftH = 0; // shift in hours from the 12h UT
     this.dateYYYYMMDD = y + "/" + m + "/" + d;
     //Julian date at 12h UT
-    float julianYear = y - floor((12 - m) / 10);
-    float julianMonth = (m + 9) % 12; // 0 to 11
+    float julianYear = y - floor((12.0 - m) / 10.0);
+    float julianMonth = (m + 9.0) % 12; // 0 to 11
 
-    int k1 = floor(365.25 * (julianYear + 4712));
+    int k1 = floor(365.25 * (julianYear + 4712.0));
     int k2 = floor((30.6001 * julianMonth) + 0.5 + (shiftH*24));
-    int k3 = floor(floor((julianYear / 100) + 49) * 3/4) - 38;
+    int k3 = floor(floor((julianYear / 100.0) + 49.0) * 0.75) - 38;
 
     float julianDay = k1 + k2 + d + 59; // day in Julian Calendar
     float gregorianDay = julianDay - k3;// day in Gregorian Calendar
@@ -161,28 +163,28 @@ class LPC {
     float ipRad = ipNormalized * PI; // convert to radian
     this.moonAge = ipNormalized * maxAge;
 
-    this.pc = map(this.moonAge/maxAge, 0, 1, 0, 100);
+    this.pc = 100.0 * this.moonAge/maxAge;
 
     //Calculate illumination approximation
-    this.illum = (this.pc < 50) ? this.pc * 2 : 100 - (this.pc*2 - 100);
+    this.illum = (this.pc < 50.0) ? (2.0 * this.pc) : (2.0 * (100 - this.pc));
 
     // calculate moon's distance
     float temp = (jgDay - 2451562.2 ) / 27.55454988;
-    float dp = 2*PI * this.normIt(temp);
+    float dp = 2.0 * PI * this.normIt(temp);
     this.distance = 60.4 - 3.3*cos(dp) - 0.6*cos((2*ipRad) - dp) - (0.5*cos(2*ipRad));
     this.distKm = this.earthRadii * this.distance;
 
     // calculate moon's ecliptic latitude
     temp = (jgDay - 2451565.2) / 27.212220817;
-    float np = 2*PI * this.normIt(temp);
+    float np = 2.0 * PI * this.normIt(temp);
     this.eclipticLatitude = 5.1 * sin(np);
 
     // calculate moon's ecliptic longitude
     temp = (jgDay - 2451555.8) / 27.321582241;
     float rp = this.normIt(temp);
     temp  = (360.0 * rp) + (6.3*sin(dp));
-    temp += 1.3*sin(2*ipRad - dp);
-    temp += 0.7*sin(2*ipRad);
+    temp += 1.3*sin(2.0*ipRad - dp);
+    temp += 0.7*sin(2.0*ipRad);
     this.eclipticLongitude = temp;
   }
 
@@ -191,7 +193,7 @@ class LPC {
     float refd;
 
     for (int i = 1; i <= distNames.length; i++) {
-      refd = 56 + (i * ((63.8-56)/5) );
+      refd = 56.0 + (i * ((63.8-56)/5) );
       if (this.distance < refd) {
         return distNames[(distNames.length-i)];
       }
@@ -228,6 +230,7 @@ class LPC {
     updatePixels(); // load stars background
   }
 
+  // -----------------------------------------------------
   void display () {
     float tx, ty;
     float offsettxt = this.offsety;
@@ -236,13 +239,13 @@ class LPC {
     fill(255);
     text("Date (Y/m/d): " + this.dateYYYYMMDD + " @ 12h UT", tx, ty);
     ty += offsettxt;
-    text("Moon Age (days): " + this.moonAge, tx, ty);
+    text("Moon Age (days): " + this.moonAge + " (" + round(this.pc) + "%)", tx, ty);
     ty += offsettxt;
     text("Moon in constellation: " + this.zodiac, tx, ty);
     ty += offsettxt;
     text("Moon Phase: " + this.phase, tx, ty);
     ty += offsettxt;
-    text("% Illumination: " + floor(this.illum), tx, ty);
+    text("% Illumination: " + round(this.illum), tx, ty);
     ty += offsettxt;
     text("Distance from Earth: " + floor(this.distance) + " Er (" + floor(this.distKm) + " km)", tx, ty);
     ty += offsettxt;
@@ -250,6 +253,5 @@ class LPC {
     ty += offsettxt;
     text("Ecliptic lat, Lon: " + this.eclipticLatitude + ", " + this.eclipticLongitude, tx, ty);
     ty += offsettxt;
-    //    println(this.pc + " " + this.rx[0] + " " + this.rx[1] + " " + this.ry);
   }
 }
