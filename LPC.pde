@@ -1,4 +1,5 @@
-// Fred Limouzin 2/3/2017
+// Fred Limouzin 02/03/2017
+// Updated : 12/03/2017
 //
 // This is coded based on "Lunar Phase Computation" by Stephen R. Schmitt
 // reference: "Sky & Telescope, Astronomical Computing", April 1994
@@ -8,6 +9,7 @@
 // Lunar Phase Computation
 class LPC {
   String dateYYYYMMDD;
+  int dayOffset;
   float pc;       // age of moon in percent
   float distance; // in Earth radii (1 Er ~= 6371 km)
   String distName;
@@ -106,7 +108,7 @@ class LPC {
     // In the meantime, the second border goes from right (+1) to left ( -1) 
     // side during the first and the second halves of the cycle
     // Could do like this: 
-    //   normRx[1] = 1 - ((this.pc % 50) / 25);
+    //   normRx[1] = 1.0 - ((this.pc % 50) / 25.0);
     // but let's try to include 3D with cos()
     float ztheta = 2.0 * PI * (this.pc % 50)/100;
     normRx[1] = cos(ztheta);
@@ -132,12 +134,22 @@ class LPC {
   }
 
   float getJulianOrGregorianDay () {
-    float dayOffset;
-    dayOffset = floor(map(mouseX, 0, width, -30, 30));
+    this.dayOffset = floor(map(mouseX, 0, width, -30, 30));
+    Calendar calendar = Calendar.getInstance();
+    Date currDate =  calendar.getTime();
+
+    calendar.setTime(currDate);
+    calendar.set(Calendar.MILLISECOND, 0);
+    calendar.set(Calendar.SECOND, 0);
+    calendar.set(Calendar.MINUTE, 0);
+    calendar.set(Calendar.HOUR_OF_DAY, 12);
+    calendar.add(Calendar.DAY_OF_YEAR, dayOffset);
+
     //dayOffset = 0;
-    int d = day() + int(dayOffset);
-    int m = month();
-    int y = year();
+    int d = calendar.get(Calendar.DAY_OF_MONTH); // day() + int(dayOffset);
+    int m = calendar.get(Calendar.MONTH) + 1; // month();
+    int y = calendar.get(Calendar.YEAR); // year();
+
     float shiftH = 0; // shift in hours from the 12h UT
     this.dateYYYYMMDD = y + "/" + m + "/" + d;
     //Julian date at 12h UT
@@ -235,9 +247,11 @@ class LPC {
     float tx, ty;
     float offsettxt = this.offsety;
     tx = 50;
-    ty = height/2 + this.offsety*4;
+    ty = height/2 + this.offsety*3;
     fill(255);
     text("Date (Y/m/d): " + this.dateYYYYMMDD + " @ 12h UT", tx, ty);
+    ty += offsettxt;
+    text("Offset in days from today: " + this.dayOffset, tx, ty);
     ty += offsettxt;
     text("Moon Age (days): " + this.moonAge + " (" + round(this.pc) + "%)", tx, ty);
     ty += offsettxt;
