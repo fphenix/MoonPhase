@@ -178,7 +178,7 @@ class LPC {
     this.pc = 100.0 * this.moonAge/maxAge;
 
     //Calculate illumination approximation
-    this.illum = (this.pc < 50.0) ? (2.0 * this.pc) : (2.0 * (100 - this.pc));
+    this.illum = 100.0 * (1.0 - ((1.0 + cos(2 * PI * this.pc / 100.0)) /2.0));
 
     // calculate moon's distance
     float temp = (jgDay - 2451562.2 ) / 27.55454988;
