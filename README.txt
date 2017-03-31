@@ -1,3 +1,5 @@
+Click on mp1.gif for a preview!
+
 DISCLAIMERS! PLEASE READ!
 
 This is a work in progress and I don't pretend to understand all of the calculations!
